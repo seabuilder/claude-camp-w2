@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>护理记录词频统计</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: linear-gradient(135deg,#faf6f3,#f5ede5); min-height: 100vh; padding: 20px; }
+    .container { max-width: 680px; margin: 0 auto; background: white; border-radius: 24px; padding: 40px; box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
+    .back-link { color: #dfa0c0; text-decoration: none; font-weight: 600; display: inline-block; margin-bottom: 24px; }
+    .back-link:hover { color: #d47fa0; }
+    h1 { color: #d47fa0; font-size: 1.9rem; margin-bottom: 6px; }
+    .subtitle { color: #9b9b9b; font-size: 0.92rem; margin-bottom: 20px; }
+    .tag { display: inline-block; background: rgba(232,180,204,0.15); color: #d47fa0; font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 10px; margin-bottom: 20px; letter-spacing: 0.04em; }
+
+    textarea {
+      width: 100%; min-height: 140px; padding: 14px 16px;
+      border: 2px solid rgba(232,180,204,0.35); border-radius: 14px;
+      font-size: 0.96rem; line-height: 1.6; resize: vertical;
+      font-family: inherit; transition: border-color 0.2s;
+      margin-bottom: 14px;
+    }
+    textarea:focus { outline: none; border-color: #dfa0c0; box-shadow: 0 0 0 3px rgba(223,160,192,0.1); }
+
+    .hint { font-size: 0.82rem; color: #bbb; margin-bottom: 16px; }
+
+    .btn-row { display: flex; gap: 10px; margin-bottom: 28px; }
+    .btn { padding: 12px 24px; border: none; border-radius: 14px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.25s; font-family: inherit; }
+    .btn-primary { background: linear-gradient(135deg,#e8b4cc,#dfa0c0); color: white; flex: 1; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(232,180,204,0.35); }
+    .btn-clear { background: #f5f5f7; color: #9b9b9b; }
+    .btn-clear:hover { background: #ebebed; }
+
+    .result { display: none; }
+    .result.show { display: block; animation: slideIn 0.35s ease; }
+    @keyframes slideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+    .stats-row {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px;
+    }
+    .stat-box { background: linear-gradient(135deg,#fff9fb,#fff2f8); border-radius: 14px; padding: 16px; text-align: center; border: 1px solid rgba(232,180,204,0.2); }
+    .stat-num { font-size: 1.8rem; font-weight: 800; color: #d47fa0; }
+    .stat-label { font-size: 0.78rem; color: #9b9b9b; margin-top: 2px; }
+
+    .section-title { font-size: 0.78rem; font-weight: 700; color: #9b9b9b; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
+
+    .word-list { display: flex; flex-direction: column; gap: 8px; }
+    .word-item { display: flex; align-items: center; gap: 12px; }
+    .word-rank { width: 28px; font-size: 0.78rem; font-weight: 700; color: #bbb; text-align: right; flex-shrink: 0; }
+    .word-text { width: 130px; font-weight: 700; font-size: 0.92rem; color: #2d2d2d; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .word-bar-wrap { flex: 1; background: #f5ede5; border-radius: 6px; height: 16px; overflow: hidden; }
+    .word-bar { height: 100%; border-radius: 6px; background: linear-gradient(135deg,#e8b4cc,#dfa0c0); transition: width 0.6s ease; }
+    .word-count { width: 40px; text-align: right; font-size: 0.85rem; font-weight: 700; color: #d47fa0; flex-shrink: 0; }
+
+    .sample-btn {
+      display: inline-block; font-size: 0.82rem; color: #dfa0c0; cursor: pointer;
+      text-decoration: underline; margin-left: 8px;
+    }
+    .sample-btn:hover { color: #d47fa0; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <a href="index.html" class="back-link">← 返回首页</a>
+  <div class="tag">练习 2 · 字典 + 排序 + 忽略大小写</div>
+  <h1>📊 护理记录词频统计</h1>
+  <p class="subtitle">输入护理交班记录，自动统计高频词汇并排序</p>
+
+  <div class="hint">
+    粘贴或输入一段文字，点击"开始统计"查看词频分析。
+    <span class="sample-btn" onclick="loadSample()">载入示例文本</span>
+  </div>
+
+  <textarea id="textInput" placeholder="例：Patient was administered morphine 5mg IV. Morphine was effective for pain relief. Patient resting comfortably after morphine administration..."></textarea>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="countWords()">📊 开始统计</button>
+    <button class="btn btn-clear" onclick="clearAll()">清空</button>
+  </div>
+
+  <div class="result" id="result">
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-label">总词数</div></div>
+      <div class="stat-box"><div class="stat-num" id="statUnique">0</div><div class="stat-label">不重复词汇</div></div>
+      <div class="stat-box"><div class="stat-num" id="statTop">—</div><div class="stat-label">最高频词</div></div>
+    </div>
+    <div class="section-title">词频排名（从高到低）</div>
+    <div class="word-list" id="wordList"></div>
+  </div>
+</div>
+
+<script>
+  function countWords() {
+    const text = document.getElementById('textInput').value.trim();
+    if (!text) { alert('请先输入文字'); return; }
+
+    // 字典存储词频，忽略大小写
+    const wordCount = {};
+    const words = text.toLowerCase().split(/\s+/);
+    for (const w of words) {
+      const clean = w.replace(/[^a-z一-龥]/gi, '');
+      if (clean) wordCount[clean] = (wordCount[clean] || 0) + 1;
+    }
+
+    // 按出现次数从高到低排序
+    const sorted = Object.entries(wordCount).sort((a, b) => b[1] - a[1]);
+    const total  = Object.values(wordCount).reduce((a, b) => a + b, 0);
+    const maxCount = sorted[0]?.[1] || 1;
+
+    document.getElementById('statTotal').textContent  = total;
+    document.getElementById('statUnique').textContent = sorted.length;
+    document.getElementById('statTop').textContent    = sorted[0]?.[0] || '—';
+
+    document.getElementById('wordList').innerHTML = sorted.slice(0, 30).map(([word, count], i) => `
+      <div class="word-item">
+        <div class="word-rank">${i + 1}</div>
+        <div class="word-text">${word}</div>
+        <div class="word-bar-wrap">
+          <div class="word-bar" style="width:${(count / maxCount * 100).toFixed(1)}%"></div>
+        </div>
+        <div class="word-count">${count}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('result').classList.add('show');
+    setTimeout(() => document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  }
+
+  function clearAll() {
+    document.getElementById('textInput').value = '';
+    document.getElementById('result').classList.remove('show');
+  }
+
+  function loadSample() {
+    document.getElementById('textInput').value =
+      `Patient admitted with chest pain and shortness of breath. Pain was rated 7 out of 10. Patient was given morphine 5mg IV for pain relief. Morphine was effective and pain reduced to 3 out of 10. Patient resting comfortably after morphine. Blood pressure monitored every hour. Blood pressure stable at 120/80. Patient requesting more pain medication. Nurse assessed patient pain level. Pain management plan reviewed with doctor. Patient family informed of patient condition. Patient sleeping well overnight. Vital signs stable throughout the night. Nursing care plan updated.`;
+    countWords();
+  }
+</script>
+</body>
+</html>

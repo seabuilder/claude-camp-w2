@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>护理工具中心 — Week 2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #faf6f3 0%, #f5ede5 100%);
+      color: #2d2d2d;
+    }
+    .hero {
+      text-align: center;
+      padding: 80px 20px 60px;
+      background: linear-gradient(135deg, #e8b4cc 0%, #dfa0c0 100%);
+      color: white;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 13px; font-weight: 600;
+      background: rgba(255,255,255,0.2);
+      padding: 8px 16px; border-radius: 20px;
+      margin-bottom: 20px; letter-spacing: 0.06em;
+    }
+    .hero h1 { font-size: clamp(1.8rem,5vw,3rem); font-weight: 800; margin-bottom: 12px; }
+    .hero p { font-size: 1rem; opacity: 0.88; margin-bottom: 24px; }
+    .hero .week-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px; padding: 6px 20px;
+      font-size: 0.95rem; font-weight: 600;
+    }
+    .cards {
+      max-width: 1100px; margin: 0 auto;
+      padding: 60px 24px 100px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 36px;
+    }
+    .card-link { text-decoration: none; color: inherit; display: block; perspective: 1000px; }
+    .card {
+      background: linear-gradient(135deg, #fff9fb, #fff2f8);
+      border-radius: 24px; padding: 36px 28px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(232,180,204,0.15);
+      border: 2px solid rgba(232,180,204,0.12);
+      transition: all 0.4s cubic-bezier(0.23,1,0.32,1);
+      transform-style: preserve-3d; position: relative; overflow: hidden;
+    }
+    .card::before {
+      content: ""; position: absolute; top: -50%; right: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .card-link:hover .card {
+      transform: translateY(-14px) rotateX(7deg) rotateY(-3deg);
+      box-shadow: 0 24px 48px rgba(232,180,204,0.25);
+    }
+    .card-link:hover .card::before { opacity: 1; }
+    .card-icon { font-size: 3.5rem; margin-bottom: 14px; display: inline-block; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    .card-title { font-size: 1.25rem; font-weight: 800; color: #d47fa0; margin-bottom: 10px; font-family:'Nunito',sans-serif; }
+    .card-desc { font-size: 0.92rem; color: #6e6e73; line-height: 1.6; margin-bottom: 14px; }
+    .card-tag {
+      display: inline-block; font-size: 0.78rem; font-weight: 700;
+      background: rgba(232,180,204,0.15); color: #d47fa0;
+      padding: 4px 12px; border-radius: 10px; margin-bottom: 14px; letter-spacing: 0.04em;
+    }
+    .card-cta {
+      display: inline-block;
+      background: linear-gradient(135deg, #e8b4cc, #dfa0c0);
+      color: white; padding: 9px 22px; border-radius: 20px;
+      font-size: 0.9rem; font-weight: 600; transition: all 0.3s;
+    }
+    .card-link:hover .card-cta { transform: scale(1.08); box-shadow: 0 6px 20px rgba(232,180,204,0.35); }
+    footer { text-align: center; padding: 36px 20px; font-size: 0.9rem; color: #9b9b9b; }
+    footer a { color: #dfa0c0; text-decoration: none; }
+    footer a:hover { color: #d47fa0; }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="badge">💝 Week 2 · Python 自动化 + 异常处理</div>
+  <h1>💕 护理工具中心 Week 2 💕</h1>
+  <p>字典 · 列表 · 循环 · 异常处理 — 护理场景实战练习</p>
+  <div class="week-badge">Healthcare Nursing Tools — Ning</div>
+</div>
+
+<div class="cards">
+
+  <a class="card-link" href="patient_roster.html">
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <div class="card-tag">练习 1 · 字典 + 循环</div>
+      <div class="card-title">患者花名册管理器</div>
+      <div class="card-desc">快速录入、查询、删除患者基本信息，支持床位与入院日期管理。</div>
+      <div class="card-cta">立即使用 →</div>
+    </div>
+  </a>
+
+  <a class="card-link" href="word_counter.html">
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <div class="card-tag">练习 2 · 字典 + 排序</div>
+      <div class="card-title">护理记录词频统计</div>
+      <div class="card-desc">输入护理交班记录，自动统计高频词汇并按出现次数排序。</div>
+      <div class="card-cta">立即使用 →</div>
+    </div>
+  </a>
+
+  <a class="card-link" href="nursing_tasks.html">
+    <div class="card">
+      <div class="card-icon">✅</div>
+      <div class="card-tag">练习 3 · 列表 + 本地存储</div>
+      <div class="card-title">护理任务清单</div>
+      <div class="card-desc">添加、完成、查看当班任务，数据自动保存，刷新后不丢失。</div>
+      <div class="card-cta">立即使用 →</div>
+    </div>
+  </a>
+
+  <a class="card-link" href="safe_calculator.html">
+    <div class="card">
+      <div class="card-icon">🧮</div>
+      <div class="card-tag">练习 4 · 异常处理</div>
+      <div class="card-title">安全药物剂量计算器</div>
+      <div class="card-desc">支持四则运算，除零、非数字输入均有友好提示，不崩溃。</div>
+      <div class="card-cta">立即使用 →</div>
+    </div>
+  </a>
+
+</div>
+
+<footer>
+  Claude Camp Week 2 · Healthcare Nursing Tools &nbsp;·&nbsp;
+  <a href="https://github.com/seabuilder/claude-camp-w2" target="_blank">GitHub 仓库</a>
+</footer>
+
+</body>
+</html>

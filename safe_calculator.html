@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>安全药物剂量计算器</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: linear-gradient(135deg,#faf6f3,#f5ede5); min-height: 100vh; padding: 20px; }
+    .container { max-width: 560px; margin: 0 auto; background: white; border-radius: 24px; padding: 40px; box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
+    .back-link { color: #dfa0c0; text-decoration: none; font-weight: 600; display: inline-block; margin-bottom: 24px; }
+    .back-link:hover { color: #d47fa0; }
+    h1 { color: #d47fa0; font-size: 1.9rem; margin-bottom: 6px; }
+    .subtitle { color: #9b9b9b; font-size: 0.92rem; margin-bottom: 20px; }
+    .tag { display: inline-block; background: rgba(232,180,204,0.15); color: #d47fa0; font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 10px; margin-bottom: 24px; letter-spacing: 0.04em; }
+
+    /* Display */
+    .display {
+      background: linear-gradient(135deg,#2d2d2d,#1a1a1a); border-radius: 20px;
+      padding: 24px 28px; margin-bottom: 20px; min-height: 110px;
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .display-expr { font-size: 0.9rem; color: rgba(255,255,255,0.45); min-height: 22px; margin-bottom: 6px; font-family: 'SF Mono','Fira Code',monospace; }
+    .display-result { font-size: 2.6rem; font-weight: 800; color: white; font-family: 'SF Mono','Fira Code',monospace; line-height: 1.1; word-break: break-all; }
+    .display-result.error { color: #ff6b6b; font-size: 1.5rem; }
+    .display-result.success { color: #69db7c; }
+
+    /* Buttons */
+    .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+    .btn {
+      padding: 18px 0; border: none; border-radius: 14px;
+      font-size: 1.2rem; font-weight: 700; cursor: pointer;
+      transition: all 0.15s; font-family: inherit;
+    }
+    .btn:active { transform: scale(0.94); }
+    .btn-num  { background: #f5ede5; color: #2d2d2d; }
+    .btn-num:hover { background: #ede0d9; }
+    .btn-op   { background: linear-gradient(135deg,#e8b4cc,#dfa0c0); color: white; }
+    .btn-op:hover { box-shadow: 0 4px 12px rgba(232,180,204,0.4); transform: translateY(-1px); }
+    .btn-clear { background: #fff3f0; color: #ef5350; }
+    .btn-clear:hover { background: #ffebee; }
+    .btn-eq {
+      background: linear-gradient(135deg,#d47fa0,#c06090); color: white;
+      grid-column: span 2; font-size: 1.4rem;
+    }
+    .btn-eq:hover { box-shadow: 0 6px 20px rgba(192,96,144,0.35); transform: translateY(-2px); }
+    .btn-zero { grid-column: span 2; }
+    .btn-dot  { background: #f5f5f7; color: #2d2d2d; }
+
+    /* History */
+    .section-title { font-size: 0.78rem; font-weight: 700; color: #9b9b9b; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .clear-hist { font-size: 0.78rem; color: #ccc; cursor: pointer; font-weight: 400; }
+    .clear-hist:hover { color: #d47fa0; }
+    .history { max-height: 200px; overflow-y: auto; }
+    .hist-item { display: flex; justify-content: space-between; padding: 8px 12px; border-radius: 10px; font-size: 0.88rem; margin-bottom: 4px; cursor: pointer; transition: background 0.15s; }
+    .hist-item:hover { background: rgba(232,180,204,0.1); }
+    .hist-expr { color: #9b9b9b; }
+    .hist-val  { font-weight: 700; color: #d47fa0; }
+    .hist-err  { color: #ef5350; }
+    .empty-hist { text-align: center; color: #ccc; padding: 20px; font-size: 0.88rem; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <a href="index.html" class="back-link">← 返回首页</a>
+  <div class="tag">练习 4 · 异常处理 · 除零保护 · 非数字保护</div>
+  <h1>🧮 安全药物剂量计算器</h1>
+  <p class="subtitle">支持 + − × ÷，除零和非数字输入均有友好提示</p>
+
+  <div class="display">
+    <div class="display-expr" id="displayExpr"></div>
+    <div class="display-result" id="displayResult">0</div>
+  </div>
+
+  <div class="btn-grid">
+    <button class="btn btn-clear" onclick="clearAll()">AC</button>
+    <button class="btn btn-clear" onclick="backspace()">⌫</button>
+    <button class="btn btn-op"   onclick="inputOp('%')">%</button>
+    <button class="btn btn-op"   onclick="inputOp('÷')">÷</button>
+
+    <button class="btn btn-num"  onclick="inputNum('7')">7</button>
+    <button class="btn btn-num"  onclick="inputNum('8')">8</button>
+    <button class="btn btn-num"  onclick="inputNum('9')">9</button>
+    <button class="btn btn-op"   onclick="inputOp('×')">×</button>
+
+    <button class="btn btn-num"  onclick="inputNum('4')">4</button>
+    <button class="btn btn-num"  onclick="inputNum('5')">5</button>
+    <button class="btn btn-num"  onclick="inputNum('6')">6</button>
+    <button class="btn btn-op"   onclick="inputOp('−')">−</button>
+
+    <button class="btn btn-num"  onclick="inputNum('1')">1</button>
+    <button class="btn btn-num"  onclick="inputNum('2')">2</button>
+    <button class="btn btn-num"  onclick="inputNum('3')">3</button>
+    <button class="btn btn-op"   onclick="inputOp('+')">+</button>
+
+    <button class="btn btn-num btn-zero" onclick="inputNum('0')">0</button>
+    <button class="btn btn-dot"  onclick="inputDot()">.</button>
+    <button class="btn btn-eq"   onclick="calculate()">=</button>
+  </div>
+
+  <div class="section-title">
+    计算历史
+    <span class="clear-hist" onclick="clearHistory()">清除</span>
+  </div>
+  <div class="history" id="history">
+    <div class="empty-hist" id="emptyHist">暂无计算记录</div>
+  </div>
+</div>
+
+<script>
+  let current  = '0';
+  let expr     = '';
+  let operator = '';
+  let operand1 = null;
+  let justCalc = false;
+  let history  = [];
+
+  function updateDisplay(result, isError) {
+    const el = document.getElementById('displayResult');
+    el.textContent = result;
+    el.className = 'display-result' + (isError ? ' error' : '');
+    document.getElementById('displayExpr').textContent = expr;
+  }
+
+  function inputNum(n) {
+    if (justCalc) { current = n; expr = ''; justCalc = false; }
+    else current = current === '0' ? n : current + n;
+    updateDisplay(current);
+  }
+
+  function inputDot() {
+    if (justCalc) { current = '0.'; justCalc = false; }
+    else if (!current.includes('.')) current += '.';
+    updateDisplay(current);
+  }
+
+  function inputOp(op) {
+    justCalc = false;
+    if (operand1 !== null && operator && !justCalc) calculate(true);
+    operand1 = parseFloat(current);
+    operator = op;
+    expr = current + ' ' + op;
+    current = '0';
+    updateDisplay('0');
+  }
+
+  function calculate(chained) {
+    if (operand1 === null || !operator) return;
+    const a = operand1;
+    const b = parseFloat(current);
+
+    // 异常处理：除零检查
+    if ((operator === '÷' || operator === '/') && b === 0) {
+      updateDisplay('⚠️ 除数不能为 0', true);
+      addHistory(expr + ' ' + current, '除零错误', true);
+      operand1 = null; operator = ''; current = '0'; expr = '';
+      return;
+    }
+
+    let result;
+    if      (operator === '+') result = a + b;
+    else if (operator === '−') result = a - b;
+    else if (operator === '×') result = a * b;
+    else if (operator === '÷') result = a / b;
+    else if (operator === '%') result = a % b;
+
+    const fullExpr = expr + ' ' + current;
+    const display  = parseFloat(result.toFixed(10)).toString();
+    if (!chained) {
+      addHistory(fullExpr, display, false);
+      expr = fullExpr + ' =';
+    }
+    updateDisplay(display);
+    current  = display;
+    operand1 = chained ? result : null;
+    if (!chained) { operator = ''; justCalc = true; }
+  }
+
+  function clearAll() {
+    current = '0'; expr = ''; operator = ''; operand1 = null; justCalc = false;
+    updateDisplay('0');
+  }
+
+  function backspace() {
+    if (justCalc) { clearAll(); return; }
+    current = current.length > 1 ? current.slice(0, -1) : '0';
+    updateDisplay(current);
+  }
+
+  function addHistory(expression, value, isError) {
+    history.unshift({ expression, value, isError });
+    if (history.length > 20) history.pop();
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const el = document.getElementById('history');
+    const empty = document.getElementById('emptyHist');
+    if (!history.length) { empty.style.display = ''; return; }
+    empty.style.display = 'none';
+    el.innerHTML = '<div class="empty-hist" id="emptyHist" style="display:none"></div>' +
+      history.map(h => `
+        <div class="hist-item" onclick="useResult('${h.value}')">
+          <span class="hist-expr">${h.expression}</span>
+          <span class="hist-val ${h.isError ? 'hist-err' : ''}">${h.value}</span>
+        </div>`).join('');
+  }
+
+  function useResult(val) {
+    if (!isNaN(val)) { current = val; justCalc = false; updateDisplay(current); }
+  }
+
+  function clearHistory() { history = []; renderHistory(); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key >= '0' && e.key <= '9') inputNum(e.key);
+    else if (e.key === '.') inputDot();
+    else if (e.key === '+') inputOp('+');
+    else if (e.key === '-') inputOp('−');
+    else if (e.key === '*') inputOp('×');
+    else if (e.key === '/') { e.preventDefault(); inputOp('÷'); }
+    else if (e.key === 'Enter' || e.key === '=') calculate();
+    else if (e.key === 'Backspace') backspace();
+    else if (e.key === 'Escape') clearAll();
+  });
+</script>
+</body>
+</html>
